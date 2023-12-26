@@ -1,7 +1,6 @@
 package model.service;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 
 import model.entities.Contract;
 import model.entities.Installment;
@@ -10,18 +9,22 @@ public class ContractService {
 
 	private OnlinePaymentService paymentService;
 
+	public ContractService(OnlinePaymentService paymentService) {
+		this.paymentService = paymentService;
+	}
+
 	public void processContract(Contract contract, int months) {
-		paymentService = new PaypalService();
+		
+		double basicQuota = contract.getTotalValue() / months;
 
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(contract.getDate());
-
-		for (int i = 0; i < months; i++) {
-			cal.add(Calendar.MONTH, 1);
-			Date tempDate = cal.getTime();
-			double interestValue = paymentService.interest(contract.getTotalValue(), months)[i];
-			double totalValue = interestValue + paymentService.paymentFee(interestValue);
-			contract.getList().add(new Installment(tempDate, totalValue));
+		for (int i = 1; i <= months; i++) {
+			LocalDate tempDate = contract.getDate().plusMonths(i);
+			
+			double interestValue = paymentService.interest(basicQuota, i);
+			double feeValue = paymentService.paymentFee(basicQuota + interestValue);
+			double quota = basicQuota + interestValue + feeValue;
+			
+			contract.getInstallments().add(new Installment(tempDate, quota));
 		}
 	}
 }
