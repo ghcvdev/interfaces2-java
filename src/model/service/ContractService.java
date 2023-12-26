@@ -16,10 +16,10 @@ public class ContractService {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(contract.getDate());
 
-		for (int i = 1; i <= months; i++) {
+		for (int i = 0; i < months; i++) {
 			cal.add(Calendar.MONTH, 1);
 			Date tempDate = cal.getTime();
-			double interestValue = paymentService.interest(contract.getTotalValue(), months)[i - 1];
+			double interestValue = paymentService.interest(contract.getTotalValue(), months)[i];
 			double totalValue = interestValue + paymentService.paymentFee(interestValue);
 			contract.getList().add(new Installment(tempDate, totalValue));
 		}
